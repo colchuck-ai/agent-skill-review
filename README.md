@@ -1,8 +1,8 @@
 # agent-skill-review
 
-A Cursor [Agent Skill](https://agentskills.io/home) for reviewing other Agent Skills.
+An [Agent Skill](https://agentskills.io/home) for reviewing other Agent Skills.
 
-It evaluates a `SKILL.md` file (and its bundled `scripts/`, `references/`, and `assets/`) through five lenses, each catching a class of failure the others structurally cannot:
+It evaluates a `SKILL.md` file (and its bundled `scripts/`, `references/`, and `assets/`) through five lenses, each catching a class of failure the others structurally cannot. The skill itself lives in [`agent-skill-review/`](agent-skill-review/):
 
 1. **Premise & Design** — should it exist, and is it shaped right?
 2. **Conformance** — is it a valid skill that will load and validate?
@@ -12,22 +12,23 @@ It evaluates a `SKILL.md` file (and its bundled `scripts/`, `references/`, and `
 
 ## Usage
 
-Ask an agent to review a skill, e.g. "review the skill in `path/to/skill`". The agent reads [`SKILL.md`](SKILL.md) and follows its workflow, producing a report with findings by severity.
+Ask an agent to review a skill, e.g. "review the skill in `path/to/skill`". The agent reads [`SKILL.md`](agent-skill-review/SKILL.md) and follows its workflow, producing a report with findings by severity.
 
 To run the conformance validator directly:
 
 ```bash
-uv run scripts/validate_skill.py <path-to-skill-directory>
+uv run agent-skill-review/scripts/validate_skill.py <path-to-skill-directory>
 ```
 
 Using `uv` ensures PyYAML is available; a bare `python3` run falls back to a minimal YAML parser that can mis-parse non-trivial frontmatter.
 
 ## Contents
 
-- `SKILL.md` — the skill definition and review workflow
-- `references/premise-and-design.md` — Lens 1 adversarial gate
-- `references/review-rubric.md` — criteria for Lenses 2–5
-- `scripts/validate_skill.py` — spec conformance validator (Lens 2)
+- `agent-skill-review/SKILL.md` — the skill definition and review workflow
+- `agent-skill-review/references/premise-and-design.md` — Lens 1 adversarial gate
+- `agent-skill-review/references/review-rubric.md` — criteria for Lenses 2–5
+- `agent-skill-review/scripts/validate_skill.py` — spec conformance validator (Lens 2)
+- `install.sh` — installer that clones the repo and copies the skill into your agent's skills directory
 
 ## License
 
