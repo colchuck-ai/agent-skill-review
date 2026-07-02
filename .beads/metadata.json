@@ -1,0 +1,9 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "server",
+  "dolt_server_host": "127.0.0.1",
+  "dolt_server_port": 27803,
+  "dolt_database": "asr",
+  "project_id": "8e1e1192-5ec0-4188-a855-99a90c2fbbcd"
+}
