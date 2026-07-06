@@ -7,6 +7,4 @@
 
 # Gas City
 .beads/*
-!.beads/config.yaml
-!.beads/metadata.json
 !.beads/identity.toml
