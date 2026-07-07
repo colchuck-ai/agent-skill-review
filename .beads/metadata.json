@@ -1,7 +1,7 @@
 {
-  "backend": "dolt",
   "database": "dolt",
-  "dolt_database": "asr",
-  "dolt_mode": "server",
-  "project_id": "gc-local-3e48f4c77a6ee1a1f497f83057472542"
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "agent_skill_review",
+  "project_id": "0a189c42-c940-4c47-a510-d688f04e3f0e"
 }
