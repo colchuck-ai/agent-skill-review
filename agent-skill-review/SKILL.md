@@ -58,8 +58,10 @@ Load [references/premise-and-design.md](references/premise-and-design.md) and wo
 Run the bundled validator to catch mechanical spec violations before spending judgment:
 
 ```bash
-python3 scripts/validate_skill.py <path-to-skill-directory>
+uv run scripts/validate_skill.py <path-to-skill-directory>
 ```
+
+`python3 scripts/validate_skill.py <path>` also works but is a fallback only — see the Gotchas entry below for why `uv run` is the safer default.
 
 It emits JSON (errors, warnings) and exits non-zero on any hard spec violation. Fold its output into the report; do not re-derive limits by hand. Criteria: [rubric § Conformance](references/review-rubric.md).
 
@@ -81,8 +83,8 @@ Use the [Report format](#report-format). Every finding must be actionable (what'
 
 ## Severity levels
 
-- **Reject** — Lens 1 verdict: the skill doesn't justify existing, or is fundamentally mis-architected. Recommend deletion or rethink, note it prominently, then continue the remaining lenses at your discretion.
-- **Blocker** — Violates a hard spec rule (Lens 2). May fail to load or validate.
+- **Reject (judgment call)** — Lens 1 verdict: the skill doesn't justify existing, or is fundamentally mis-architected. Subjective and adversarial by design — never conflate with a spec violation. Recommend deletion or rethink, note it prominently, then continue the remaining lenses at your discretion.
+- **Blocker (spec violation)** — Violates a hard spec rule (Lens 2). Objective; may fail to load or validate.
 - **Major** — Will likely mis-trigger, waste context, or produce wrong output. Fix before use.
 - **Minor** — Quality or clarity improvement; safe to defer.
 
@@ -113,12 +115,15 @@ Use this template, adapting to what you found. Omit the Lens 5 section if you di
 <Eval results vs. baseline, or "not evaluated — structural review only".>
 
 ## Findings by severity
-### Reject / Blockers
+### Reject (judgment call)
+- **<title>** — <why the premise/architecture fails, what a rethink would look like>.
+### Blockers (spec violations)
 - **<title>** — <what's wrong, why it matters, exact fix>. ([link])
 ### Major
 - **<title>** — <what's wrong, why, fix>. ([link])
 ### Minor
 - **<title>** — <suggestion>.
+- e.g. **Bundled helper script has no `--help` output** — an agent invoking it blind has to read the source to learn its flags; add an argparse `--help`.
 
 ## Strengths
 - <What the skill does well — call this out; it guides what not to change.>
@@ -134,7 +139,7 @@ Use this template, adapting to what you found. Omit the Lens 5 section if you di
 
 ## Available scripts
 
-- **`scripts/validate_skill.py`** — Lens 2 engine. Validates a skill directory against hard spec rules (frontmatter presence, `name` format and directory match, `description`/`compatibility` length limits) and emits best-practice warnings (SKILL.md length, unresolved file references, undocumented scripts). Stdlib-only; run `python3 scripts/validate_skill.py <path>`. Use `--help` for options and exit codes.
+- **`scripts/validate_skill.py`** — Lens 2 engine. Validates a skill directory against hard spec rules (frontmatter presence, `name` format and directory match, `description`/`compatibility` length limits) and emits best-practice warnings (SKILL.md length, unresolved file references, undocumented scripts). Run `uv run scripts/validate_skill.py <path>` (resolves PyYAML automatically via the script's PEP 723 dependency block); `python3 scripts/validate_skill.py <path>` is a fallback only — see Gotchas. Use `--help` for options and exit codes.
 
 ## Gotchas
 
