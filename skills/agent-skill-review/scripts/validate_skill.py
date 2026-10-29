@@ -8,11 +8,16 @@
 Checks hard spec rules (errors) and best-practice guidance (warnings), then
 prints a JSON report to stdout. Exits non-zero if any hard rule is violated.
 
+It also warns when the skill sits outside the folders the `npx skills`
+installer discovers (e.g. skills/<name>/). That is a distribution convention,
+not a spec rule, so it is a warning; --no-layout skips it.
+
 Spec: https://agentskills.io/specification
 Progressive disclosure: https://agentskills.io/specification#progressive-disclosure
 
 Usage:
   python3 scripts/validate_skill.py <path-to-skill-directory>
+  python3 scripts/validate_skill.py --no-layout <path-to-skill-directory>
   python3 scripts/validate_skill.py --help
 
 Exit codes:
@@ -34,6 +39,21 @@ MAX_DESCRIPTION = 1024
 MAX_COMPATIBILITY = 500
 MAX_BODY_LINES = 500
 SPEC = "https://agentskills.io/specification"
+DISCOVERY = "https://github.com/vercel-labs/skills/blob/main/docs/creating-skills.md#skill-discovery"
+
+# Container directories the `npx skills` installer searches (a subset of its
+# full list: the generic ones plus the common agent-specific ones). A skill at
+# <container>/<name>/SKILL.md, up to three levels below a container, or a
+# SKILL.md at the repo root is discovered without the installer's fallback
+# full-repo search. Keep this in step with DISCOVERY.
+DISCOVERY_CONTAINERS = (
+    "skills",
+    "skills/.curated",
+    "skills/.experimental",
+    "skills/.system",
+    ".agents/skills",
+    ".claude/skills",
+)
 
 KNOWN_KEYS = {
     "name",
@@ -164,7 +184,65 @@ def find_referenced_files(body):
     return sorted(cleaned)
 
 
-def validate(skill_dir):
+def find_repo_root(path):
+    """Return the nearest ancestor (or self) containing .git, else None."""
+    cur = os.path.abspath(path)
+    while True:
+        if os.path.exists(os.path.join(cur, ".git")):
+            return cur
+        parent = os.path.dirname(cur)
+        if parent == cur:
+            return None
+        cur = parent
+
+
+def _extra_containers(repo_root):
+    """Containers declared in skills.sh.json `paths` (see DISCOVERY)."""
+    cfg = os.path.join(repo_root, "skills.sh.json")
+    if not os.path.isfile(cfg):
+        return []
+    try:
+        with open(cfg, "r", encoding="utf-8") as fh:
+            paths = json.load(fh).get("paths", [])
+    except (OSError, ValueError, AttributeError):
+        return []
+    out = []
+    for p in paths if isinstance(paths, list) else []:
+        if isinstance(p, str) and p.startswith("./") and p.strip("./"):
+            out.append(p[2:].rstrip("/"))
+    return out
+
+
+def check_layout(skill_dir):
+    """Check the skill sits where the `npx skills` installer discovers it.
+
+    Returns (warning_or_None, info_dict). This is a distribution convention,
+    not an agentskills.io spec rule, so it never produces an error.
+    """
+    repo_root = find_repo_root(skill_dir)
+    if repo_root is None:
+        return None, {"layout": "skipped: not inside a git repository"}
+    rel = os.path.relpath(skill_dir, repo_root).replace(os.sep, "/")
+    if rel == ".":
+        return None, {"layout": "ok: SKILL.md at repo root"}
+    for manifest in (".claude-plugin/marketplace.json", ".claude-plugin/plugin.json"):
+        if os.path.isfile(os.path.join(repo_root, manifest)):
+            return None, {"layout": f"skipped: {manifest} declares skill paths"}
+    for container in DISCOVERY_CONTAINERS + tuple(_extra_containers(repo_root)):
+        if rel.startswith(container + "/"):
+            depth = rel[len(container) + 1 :].count("/") + 1
+            if depth <= 3:
+                return None, {"layout": f"ok: {rel}/ is under {container}/"}
+    name = os.path.basename(skill_dir)
+    return (
+        f"Skill is at '{rel}/' relative to the repo root, which the `npx skills` "
+        f"installer does not search; it only finds it via a fallback full-repo "
+        f"search. Move it to 'skills/{name}/' ({DISCOVERY})",
+        {"layout": f"nonstandard: {rel}/"},
+    )
+
+
+def validate(skill_dir, check_repo_layout=True):
     errors = []
     warnings = []
     info = {}
@@ -267,6 +345,13 @@ def validate(skill_dir):
                     "list bundled scripts so the agent knows they exist"
                 )
 
+    # repository layout (distribution convention, not spec)
+    if check_repo_layout:
+        layout_warning, layout_info = check_layout(skill_dir)
+        info.update(layout_info)
+        if layout_warning:
+            warnings.append(layout_warning)
+
     return {"errors": errors, "warnings": warnings, "info": info}
 
 
@@ -276,6 +361,11 @@ def main(argv=None):
         epilog="Spec: https://agentskills.io/specification",
     )
     parser.add_argument("skill_dir", help="Path to the skill directory containing SKILL.md")
+    parser.add_argument(
+        "--no-layout",
+        action="store_true",
+        help="Skip the repository layout check (for skills not distributed from a repo).",
+    )
     args = parser.parse_args(argv)
 
     if not os.path.exists(args.skill_dir):
@@ -286,7 +376,7 @@ def main(argv=None):
         )
         return 2
 
-    result = validate(args.skill_dir)
+    result = validate(args.skill_dir, check_repo_layout=not args.no_layout)
     usage_error = result.pop("usage_error", False)
     result["passed"] = len(result["errors"]) == 0
     # A usage error (bad path / missing SKILL.md) is a diagnostic, not a report.

@@ -18,6 +18,7 @@ Minimize the likelihood that a skill judged fit still contains a defect the revi
 - **O001-RSK002** - Surface-only reading: judging only the top-level description while skipping the bundled files leaves broken references, undocumented scripts, and stale content undetected, increasing the likelihood a real defect goes unsurfaced.
 - **O001-RSK003** - Early abandonment: stopping the review after an apparent showstopper leaves later-stage defects unexamined, increasing the likelihood a real defect goes unsurfaced.
 - **O001-RSK004** - Silent tool degradation: a validation tool that reports a clean result on input it actually mis-parsed gives false assurance, leaving a real spec violation unsurfaced.
+- **O001-RSK005** - Undiscoverable layout: a skill that conforms to the spec but sits where the predominant installer does not look installs only by accident, leaving a distribution defect unsurfaced because no spec rule covers it.
 
 **Requirements**
 
@@ -25,6 +26,7 @@ Minimize the likelihood that a skill judged fit still contains a defect the revi
 - **O001-R002** - Read everything first: the review must read the skill definition and every bundled file before judging premise, conformance, or craft.
 - **O001-R003** - Continue past early failure: the review must keep surfacing later-stage findings even after an early-stage failure, treating that failure as a warning rather than a hard stop.
 - **O001-R004** - Trustworthy validation: the review must validate frontmatter with the spec-complete parser available and flag explicitly when it could not confirm the parse.
+- **O001-R005** - Discoverable layout: the review must check that a skill distributed from a repository sits in a location the predominant skills installer discovers (`skills/<name>/`), and report a miss as a convention finding, not a spec violation.
 
 **Risk-Requirement Map**
 
@@ -32,6 +34,7 @@ Minimize the likelihood that a skill judged fit still contains a defect the revi
 - **O001-RSK002 - Surface-only reading**: O001-R002 - Read everything first
 - **O001-RSK003 - Early abandonment**: O001-R003 - Continue past early failure
 - **O001-RSK004 - Silent tool degradation**: O001-R004 - Trustworthy validation
+- **O001-RSK005 - Undiscoverable layout**: O001-R005 - Discoverable layout
 
 #### O002 - Precision of findings
 

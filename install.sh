@@ -65,7 +65,8 @@ git clone --depth 1 --branch "$BRANCH" "$REPO" "$TMP/agent-skill-review"
 
 rm -rf "$DEST"
 mkdir -p "$DEST"
-cp -R "$TMP/agent-skill-review/agent-skill-review/" "$DEST/"
+# "/." copies the directory's contents (a trailing "/" alone nests it on GNU cp).
+cp -R "$TMP/agent-skill-review/skills/agent-skill-review/." "$DEST/"
 cp -R "$TMP/agent-skill-review/LICENSE" "$DEST/"
 
 echo "Installed agent-skill-review skill to $DEST"

@@ -8,7 +8,7 @@ Grade each item Pass / Fail / N/A and map failures to a severity from `SKILL.md`
 
 ## Lens 2 — Conformance
 
-"Is it a valid skill that will load and validate?" Objective and mostly scriptable — `scripts/validate_skill.py` checks most of these mechanically. Failures are **Blockers**. Source: [Specification](https://agentskills.io/specification).
+"Is it a valid skill that will load and validate?" Objective and mostly scriptable — `scripts/validate_skill.py` checks most of these mechanically. Spec failures are **Blockers**; the distribution-layout check below is a convention, graded **Major**. Source: [Specification](https://agentskills.io/specification).
 
 - [ ] A `SKILL.md` exists at the skill directory root.
 - [ ] `SKILL.md` begins with YAML frontmatter delimited by `---` lines.
@@ -27,6 +27,11 @@ Grade each item Pass / Fail / N/A and map failures to a severity from `SKILL.md`
 - [ ] File references are relative paths, one level deep from `SKILL.md`. Deeply nested chains → Major.
 - [ ] Every referenced file actually exists (no dead links). Missing → Blocker if load-bearing, else Major.
 - [ ] Directory layout matches its contents (files placed in `scripts/`/`references/`/`assets/` as appropriate).
+
+**Distribution layout (also Lens 2; a convention, not a spec rule):** source [`npx skills` skill discovery](https://github.com/vercel-labs/skills/blob/main/docs/creating-skills.md#skill-discovery).
+
+- [ ] A skill distributed from a repository sits where the `npx skills` installer discovers it: `skills/<name>/SKILL.md` (preferred), a `SKILL.md` at the repo root, or under another discovery container such as `.agents/skills/` or `.claude/skills/`. The validator's layout warning checks this. Fail → **Major**: the installer finds the skill only through its fallback full-repo search, and the skill doesn't match the layout other skills and tools expect. Fix: move it to `skills/<name>/` and update any installer or docs paths. Label the finding as a convention, citing the discovery docs, never as a spec violation.
+- [ ] N/A when the skill isn't distributed from a repository (for example, a project-local skill already under `.claude/skills/`, which also passes), or when a `.claude-plugin/` manifest or `skills.sh.json` declares its path (the validator accounts for both).
 
 ---
 

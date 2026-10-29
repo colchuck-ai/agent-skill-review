@@ -65,6 +65,8 @@ uv run scripts/validate_skill.py <path-to-skill-directory>
 
 It emits JSON (errors, warnings) and exits non-zero on any hard spec violation. Fold its output into the report; do not re-derive limits by hand. Criteria: [rubric § Conformance](references/review-rubric.md).
 
+Its one non-spec check is **repository layout**: a warning when a skill in a git repo sits outside the folders the `npx skills` installer discovers (e.g. `skills/<name>/`). Grade it **Major** and label it a convention, not a spec violation. Pass `--no-layout` for a skill that isn't distributed from a repo.
+
 ### Lens 3 — Activation (triggering)
 
 The `description` carries the entire burden of activation ([optimizing-descriptions](https://agentskills.io/skill-creation/optimizing-descriptions)). Judge it against [rubric § Activation](references/review-rubric.md). If triggering is the primary concern, recommend the labeled eval-query method — see [rubric § Activation](references/review-rubric.md) for the method rather than restating the recipe here.
@@ -139,7 +141,7 @@ Use this template, adapting to what you found. Omit the Lens 5 section if you di
 
 ## Available scripts
 
-- **`scripts/validate_skill.py`** — Lens 2 engine. Validates a skill directory against hard spec rules (frontmatter presence, `name` format and directory match, `description`/`compatibility` length limits) and emits best-practice warnings (SKILL.md length, unresolved file references, undocumented scripts). Run `uv run scripts/validate_skill.py <path>` (resolves PyYAML automatically via the script's PEP 723 dependency block); `python3 scripts/validate_skill.py <path>` is a fallback only — see Gotchas. Use `--help` for options and exit codes.
+- **`scripts/validate_skill.py`** — Lens 2 engine. Validates a skill directory against hard spec rules (frontmatter presence, `name` format and directory match, `description`/`compatibility` length limits) and emits best-practice warnings (SKILL.md length, unresolved file references, undocumented scripts, and repository layout outside the `npx skills` discovery folders). Run `uv run scripts/validate_skill.py <path>` (resolves PyYAML automatically via the script's PEP 723 dependency block); `python3 scripts/validate_skill.py <path>` is a fallback only — see Gotchas. Use `--help` for options and exit codes.
 
 ## Gotchas
 
