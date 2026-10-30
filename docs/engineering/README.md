@@ -14,6 +14,7 @@ The skill is a `SKILL.md` orchestrator that drives a five-lens review funnel, wi
 - The skill must conform to the very spec it reviews (it is dogfooded against its own validator): `SKILL.md` body under ~500 lines, `description` ≤ 1024 characters, references one level deep.
 - The validator must run correctly without a preinstalled environment; it declares its dependency inline (PEP 723) so `uv run` resolves PyYAML, and warns that a bare `python3` run may silently degrade.
 - Distribution is out of the review runtime: the skill is copied into an agent's skills directory by `install.sh` (`cursor`, `claude`, or `agents` targets), which is packaging tooling, not a review component.
+- The skill lives at `skills/agent-skill-review/`, the layout it requires of others (O001-R005), so the `npx skills` installer discovers it directly.
 
 ## Technology Choices
 
@@ -51,7 +52,7 @@ Holds the pass/fail criteria for Conformance, Activation, Instructional Craft, a
 
 ### C004 - Conformance Validator
 
-Validates a skill directory against hard spec rules (frontmatter presence, `name` format and directory match, `description`/`compatibility` length limits) and best-practice warnings (body length, unresolved references, undocumented scripts); emits a JSON report and exits non-zero on any spec violation.
+Validates a skill directory against hard spec rules (frontmatter presence, `name` format and directory match, `description`/`compatibility` length limits) and best-practice warnings (body length, unresolved references, undocumented scripts) plus a repository-layout warning when the skill sits outside the `npx skills` discovery folders; emits a JSON report and exits non-zero on any spec violation (never on the layout warning, which is a convention).
 
 **Relationships**
 
@@ -63,6 +64,7 @@ Validates a skill directory against hard spec rules (frontmatter presence, `name
 - **O001-R002 - Read everything first**: C001 - Review Orchestrator
 - **O001-R003 - Continue past early failure**: C001 - Review Orchestrator, C002 - Premise & Design Gate
 - **O001-R004 - Trustworthy validation**: C004 - Conformance Validator, C001 - Review Orchestrator
+- **O001-R005 - Discoverable layout**: C004 - Conformance Validator, C003 - Review Rubric
 - **O002-R001 - Separate judgment from spec**: C002 - Premise & Design Gate, C001 - Review Orchestrator
 - **O003-R001 - Mechanical checks by tool**: C004 - Conformance Validator
 - **O003-R002 - Funnel ordering**: C001 - Review Orchestrator
